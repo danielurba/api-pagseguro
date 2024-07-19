@@ -3,7 +3,7 @@ const consign = require('consign')
 
 require('dotenv').config();
 
-const { PORT = 8888 } = process.env;
+const { PORT } = process.env;
 
 consign()
     .then('./config/middlewares.js')
