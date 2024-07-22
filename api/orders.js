@@ -36,6 +36,9 @@ module.exports = app => {
 
     if (!course) return res.status(400).send('Curso não encontrado!');
 
+    const firstTwoDigits = customerPhoneData.substring(0, 2);
+    const remainingDigits = customerPhoneData.substring(2);
+
     const creditInstallmentsValue = {
       unit_amount: course.unit_amount,
       installments: course.installments,
@@ -59,8 +62,8 @@ module.exports = app => {
         tax_id: customerCpfData,
         phones: [{
           country: '55',
-          area: 45,
-          number: customerPhoneData,
+          area: firstTwoDigits,
+          number: remainingDigits,
           type: 'MOBILE'
         }]
       },
@@ -164,7 +167,8 @@ module.exports = app => {
         {
           amount: {
             value: course.unit_amount
-          }
+          },
+          expiration_date: getExpirationDate(2),
         }
       ]
     };
@@ -264,6 +268,8 @@ module.exports = app => {
     const orderId = req.params.orderId;
     if (!orderId) return res.status(400).send('Transaction ID is required.');
 
+    console.log(orderId)
+
     try {
       const response = await axios.get(`${process.env.BASE_URL}/orders/${orderId}`, {
         headers: {
@@ -310,4 +316,22 @@ function getCoursesInJson() {
   const productsPath = path.join(__dirname, '../jsons-products/products-extensao.json');
   const productsData = fs.readFileSync(productsPath, 'utf8');
   return JSON.parse(productsData);
+}
+
+function getExpirationDate(hoursToAdd) {
+  const date = new Date();
+  date.setHours(date.getHours() + hoursToAdd);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const timezoneOffset = -date.getTimezoneOffset();
+  const timezoneSign = timezoneOffset >= 0 ? '+' : '-';
+  const timezoneHours = String(Math.floor(Math.abs(timezoneOffset) / 60)).padStart(2, '0');
+  const timezoneMinutes = String(Math.abs(timezoneOffset) % 60).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${timezoneSign}${timezoneHours}:${timezoneMinutes}`;
 }
