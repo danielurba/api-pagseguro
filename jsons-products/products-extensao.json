@@ -4,15 +4,23 @@
         "name": "Emagrecimento Feminino: Estratégias Nutricionais & Hormonais",
         "quantity": 1,
         "installments": 3,
-        "unit_amount": 3999,
+        "unit_amount": 19900,
         "image_url": "https://uplaygo.com.br/wp-content/uploads/2024/06/Desktop-3.png"
     },
     {
-        "reference_id": "hipertrofia-e-emagrecimento",
+        "reference_id": "hipertrofia-e-emagrecimento-delay",
         "name": "Curso de Pós-graduação de Hipertrofia e Emagrecimento",
         "quantity": 1,
         "installments": 5,
-        "unit_amount": 4890,
+        "unit_amount": 14890,
+        "image_url": "https://uniguacu.com.br/wp-content/uploads/2023/03/Logos-Cursos-Principal-Negativo_NEH.png"
+    },
+    {
+        "reference_id": "hipertrofia-e-emagrecimento-aguardando",
+        "name": "Curso de Pós-graduação de Hipertrofia e Emagrecimento",
+        "quantity": 1,
+        "installments": 5,
+        "unit_amount": 24890,
         "image_url": "https://uniguacu.com.br/wp-content/uploads/2023/03/Logos-Cursos-Principal-Negativo_NEH.png"
     }
 ]
