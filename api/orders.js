@@ -15,6 +15,7 @@ module.exports = app => {
       !req.body.customerEmailData ||
       !req.body.customerCpfData ||
       !req.body.customerPhoneData ||
+      !req.body.customerDDIData ||
       !req.body.cardEncrypted ||
       !req.body.cardInstallmentsData
     ) return res.status(400).send('Informações faltando para a compra!');
@@ -26,6 +27,7 @@ module.exports = app => {
       customerEmailData,
       customerCpfData,
       customerPhoneData,
+      customerDDIData,
       cardEncrypted,
       cardInstallmentsData
     } = req.body;
@@ -61,7 +63,7 @@ module.exports = app => {
         email: customerEmailData,
         tax_id: customerCpfData,
         phones: [{
-          country: '55',
+          country: customerDDIData,
           area: firstTwoDigits,
           number: remainingDigits,
           type: 'MOBILE'
@@ -121,7 +123,8 @@ module.exports = app => {
       !req.body.customerNameData ||
       !req.body.customerEmailData ||
       !req.body.customerCpfData ||
-      !req.body.customerPhoneData
+      !req.body.customerPhoneData ||
+      !req.body.customerDDIData
     ) return res.status(400).send('Informações faltando para a compra!');
 
     const {
@@ -129,7 +132,8 @@ module.exports = app => {
       customerNameData,
       customerEmailData,
       customerCpfData,
-      customerPhoneData
+      customerPhoneData,
+      customerDDIData
     } = req.body;
 
     const courses = getCoursesInJson();
@@ -148,7 +152,7 @@ module.exports = app => {
         email: customerEmailData,
         tax_id: customerCpfData,
         phones: [{
-          country: '55',
+          country: customerDDIData,
           area: firstTwoDigits,
           number: remainingDigits,
           type: 'MOBILE'
@@ -234,8 +238,7 @@ module.exports = app => {
 
       return res.status(200).json(response.data);
     } catch (error) {
-      console.error('Erro ao obter opções de parcelamento:', error.response ? error.response.data : error.message);
-      return res.status(400).send('Cartão não encontrado!');
+      return res.status(200).send(error.response ? error.response.data : error.message);
     }
   };
 
@@ -267,8 +270,6 @@ module.exports = app => {
   const getTransactionOrdesStatus = async (req, res) => {
     const orderId = req.params.orderId;
     if (!orderId) return res.status(400).send('Transaction ID is required.');
-
-    console.log(orderId)
 
     try {
       const response = await axios.get(`${process.env.BASE_URL}/orders/${orderId}`, {

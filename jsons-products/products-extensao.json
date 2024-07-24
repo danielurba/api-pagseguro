@@ -17,10 +17,18 @@
     },
     {
         "reference_id": "hipertrofia-e-emagrecimento-aguardando",
-        "name": "Curso de Pós-graduação de Hipertrofia e Emagrecimento",
+        "name": "Curso de Pós-graduação de Hipertrofia e Emagrecimento aguardando",
         "quantity": 1,
         "installments": 5,
         "unit_amount": 24890,
+        "image_url": "https://uniguacu.com.br/wp-content/uploads/2023/03/Logos-Cursos-Principal-Negativo_NEH.png"
+    },
+    {
+        "reference_id": "hipertrofia-e-emagrecimento-instantaneo",
+        "name": "Curso de Pós-graduação de Hipertrofia e Emagrecimento Instantaneo",
+        "quantity": 1,
+        "installments": 5,
+        "unit_amount": 7890,
         "image_url": "https://uniguacu.com.br/wp-content/uploads/2023/03/Logos-Cursos-Principal-Negativo_NEH.png"
     }
 ]
