@@ -9,6 +9,7 @@ consign()
     .then('./config/middlewares.js')
     .then('./api')
     .then('./config/routes.js')
+    .then('./utils')
     .into(app)
 
 app.listen(PORT, () => {
