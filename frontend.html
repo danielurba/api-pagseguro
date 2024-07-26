@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout PagSeguro Sandbox</title>
+    <script src="https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://kit.fontawesome.com/6ea1366a7a.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div id="loading-payment" class="box-loading-payment">
+        <div class="box-loading">
+            <div class="box-gif">
+                <img class="rotate" id="gif-loading" src="" alt="">
+            </div>
+            <div class="box-text-loading">
+                <h3 id="message-loading"></h3>
+                <p>Aguarde um momento</p>
+            </div>
+        </div>
+    </div>
+    <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <div id="container-form-elementor" style="width: 60%;">
+            <div id="form-payment" class="box-form-payment">
+                <div class="box-information-purchase">
+                    <div class="box-image">
+                        <img id="image-course" src="" alt="">
+                    </div>
+                </div>
+                <div class="box-customer-inputs">
+                    <div class="box-inputs">
+                        <label for="customerName">Nome Completo:</label>
+                        <input type="text" id="customerName" placeholder="Nome Completo" required>
+                    </div>
+                    <div class="box-inputs">
+                        <label for="customerEmail">Email:</label>
+                        <input type="email" id="customerEmail" placeholder="Email" required>
+                    </div>
+                    <div class="box-inputs">
+                        <label for="customerCPF">CPF:</label>
+                        <input oninput="onInputCpf(this)" maxlength="14" type="text" id="customerCPF" placeholder="CPF" required>
+                    </div>
+                    <div class="box-row-inputs">
+                        <div class="box-inputs box-input-ddi">
+                            <label for="customerDDI">DDI:</label>
+                            <select name="customerDDI" id="customerDDI">
+                                <option value="55">+55</option>
+                            </select>
+                        </div>
+                        <div class="box-inputs box-input-phone">
+                            <label for="customerPhone">Telefone:</label>
+                            <input oninput="formatPhone(this)" maxlength="15" type="text" id="customerPhone" placeholder="Telefone" required>
+                        </div>
+                    </div>
+                </div>
+                <div id="box-types-payments" class="box-type-payments">
+                    <a id="credit" class="active-button-payments">Cartão de Crédito</a>
+                    <a id="pix" class="">PIX</a>
+                </div>
+                <div id="box-types-containers" class="container-option-payment">
+                    <div id="box-error-credit-card" class="box-error-credit-card">
+                        <div class="box-ball-declined">
+                            <i class="fa-solid fa-xmark fa-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 id="error">Transação não aprovada.</h3>
+                            <p id="info-error">Experimente outro cartão ou meio de pagamento.</p>
+                        </div>
+                    </div>
+                    <div id="credit" class="container-card-credit box-activate">
+                        <div class="box-inputs-credit">
+                            <div class="box-input">
+                                <label for="cardNumber">Número do Cartão:</label>
+                                <input maxlength="19" oninput="changeNumberCard(event)" type="text" id="cardNumber" placeholder="Número do Cartão" required>
+                            </div>
+                            <div class="box-input">
+                                <label for="cardHolderName">Nome no Cartão:</label>
+                                <input disabled type="text" id="cardHolderName" placeholder="Nome (igual no cartão)" required>
+                            </div>
+                            <div class="box-dados-expirate">
+                                <div class="box-input">
+                                    <label for="cardExpiration">Validade do cartão (MM/AA):</label>
+                                    <input disabled oninput="formatExpiryDate(event)" type="text" id="cardExpiration" placeholder="MM/AA" required>
+                                </div>
+                                <div class="box-input">
+                                    <label for="cardCVV">CVV:</label>
+                                    <input disabled oninput="formatInputNumber(event)" maxlength="3" type="text" id="cardCVV" placeholder="CVV" required>
+                                </div>
+                            </div>
+                            <div class="box-installments-input">
+                                <label for="cardInstallments">Selecione o número de parcelas:</label>
+                                <select disabled title="Digite o número do seu cartão para ter acesso as parcelas" name="cardInstallments" id="cardInstallments">
+
+                                </select>
+                            </div>
+                        </div>
+                        <div class="box-image-credit">
+                            <img src="" alt="">
+                        </div>
+                    </div>
+                    <div id="pix" class="container-card-pix">
+                        <div>
+                            <img src="" alt="">
+                        </div>
+                        <div>
+                            <p>
+                                Use o Pix, é rápido e o pagamento é instantâneo. Basta gerar o QR Code e realizar o pagamento através do PagBank ou app da instituição financeira de sua preferência.
+                            </p>
+                        </div>
+                        <div class="box-button-pix">
+                            <button id="button-pix" onclick="processPaymentPix()">Pagar com Pix</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-details-payments">
+                    <div class="box-title-details">
+                        <h3>Detalhes da compra</h3>
+                    </div>
+                    <div class="box-details-payment">
+                        <h4 id="name-course"></h4>
+                        <h5 id="value-course"></h5>
+                    </div>
+                </div>
+                <div class="box-button-purchase">
+                    <button id="purchase" type="button" onclick="encryptCard()">Comprar agora</button>
+                </div>
+            </div>
+
+            <div id="conclusion-payment" class="box-conclusion-payment">
+                <div id="payment-details-conclusion" class="payment-details-conclusion">
+                    <div class="box-icon-conclusion">
+                        <div id="box-status-icons" class="box-icon-status"></div>
+                        <h2 id="text-status"></h2>
+                    </div>
+                    <div class="box-value-payment">
+                        <h4>Valor do pagamento</h4>
+                        <h5 id="value-purchase"></h5>
+                    </div>
+                    <div class="box-informations-status">
+                        <div class="box-forma-payment">
+                            <h4>Forma de pagamento:</h4>
+                            <h3 id="installments-brand"></h3>
+                        </div>
+                        <div class="box-forma-payment">
+                            <h4>Status:</h4>
+                            <h3 id="text-status-second"></h3>
+                        </div>
+                        <div class="box-forma-payment-cod">
+                            <h4>Código da transação:</h4>
+                            <h3 id="code-transaction"></h3>
+                        </div>
+                        <div class="box-buttons-download">
+                            <a class="button-back-to-store" href="">Voltar para a loja</a>
+                            <a id="link-voucher" class="button-download-comprov">Baixar comprovante</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pix-details-payment" class="pix-details-payment">
+                    <div class="box-imagem-pix-payments">
+                        <img src="" alt="">
+                    </div>
+                    <div class="box-qrcode-scan">
+                        <h3>Escaneie o QR code</h3>
+                        <div class="box-row-qrcode-image">
+                            <div class="box-qrcode-image">
+                                <img id="image-qr-code-pix" src="" alt="">
+                            </div>
+                            <div class="box-informations-pix">
+                                <div>
+                                    <h3>1</h3>
+                                    <h4>Abra seu app da sua instituição financeira de sua preferência.</h4>
+                                </div>
+                                <div>
+                                    <h3>2</h3>
+                                    <h4>Acesse a opção Pix/QR Code.</h4>
+                                </div>
+                                <div>
+                                    <h3>3</h3>
+                                    <h4>Aponte a câmera do seu celular para o QR Code Pix</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-copy-pix-code">
+                        <h3>Ou use o Pix Copia e Cola</h3>
+                        <p>Abra seu app da instituição financeira de sua preferência, selecione pagar via pix e cole o código abaixo</p>
+                        <div class="box-code-pix">
+                            <p id="code-pix"></p>
+                        </div>
+                        <div class="box-button-copy-pix">
+                            <a id="copy-code-pix">Copiar código Pix</a>
+                        </div>
+                    </div>
+                    <div class="box-informations-time-payment">
+                        <p>Em caso de análise, a transação pode demorar até 60 minutos para ser confirmada.</p>
+                        <p>Compra registrada em <span id="data-created-at"></span>. O pedido expira em 2h. Se não for pago nesse prazo, você precisá gerar uma nova compra.</p>
+                    </div>
+
+                </div>
+
+                <div class="details-purchase-conclusion">
+                    <div class="box-title-purchase">
+                        <h2>Detalhes da compra</h2>
+                    </div>
+                    <div class="box-description-course">
+                        <h4 id="name-course-description"></h4>
+                        <h5 id="quanti-course"></h5>
+                        <h3 id="value-unit"></h3>
+                    </div>
+                    <div class="box-total-purchase">
+                        <h4>Valor Total</h4>
+                        <h3 id="value-total"></h3>
+                    </div>
+                </div>
+                <div class="identification-purchase-conclusion">
+                    <div class="box-identification-title">
+                        <h2>Identificação</h2>
+                    </div>
+                    <div class="box-identification">
+                        <h4 id="name-customer"></h4>
+                        <h5 id="phone-customer"></h5>
+                        <h3 id="email-customer"></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+    let data = {
+        id_course: "",
+        credit_card_bin: 0,
+        customerNameData: "",
+        customerEmailData: "",
+        customerCpfData: "",
+        customerPhoneData: "",
+        customerDDIData: "",
+        cardEncrypted: "",
+        cardInstallmentsData: 0
+    };
+
+    let urlApi = "https://9046-138-99-250-1.ngrok-free.app"
+
+    let installmentsValue = 0
+
+    let executedForSix = false;
+
+    const getCourse = async (curso) => {
+        const dataCourse = {
+            id_course: curso
+        }
+
+        if (curso) {
+            axios.post(`${urlApi}/get-course`, dataCourse)
+                .then(product => {
+                    data.id_course = product.data.reference_id
+                    let valor = product.data.unit_amount;
+                    let valorEmReais = valor / 100;
+
+                    document.getElementById("name-course").innerText = product.data.name
+                    document.getElementById("value-course").innerText = formatCurrency(valorEmReais)
+
+                    const totalInstallments = product.data.installments;
+
+                    installmentsValue = totalInstallments
+
+                    const selectElement = document.getElementById('cardInstallments');
+                    const optionText = `Pague em até ${totalInstallments}x`;
+                    const optionElement = document.createElement('option');
+                    optionElement.textContent = optionText;
+                    optionElement.value = ""
+                    selectElement.appendChild(optionElement);
+
+                    const imageCourse = document.getElementById("image-course")
+                    imageCourse.setAttribute("src", product.data.image_url)
+
+                    fbq('track', 'InitiateCheckout', {
+                        content_name: product.data.name,
+                        content_ids: [product.data.reference_id],
+                        content_type: 'product',
+                        value: valorEmReais,
+                        currency: 'BRL'
+                    });
+                })
+                .catch(error => {
+                    if(error.code === "ERR_NETWORK") {
+                        console.log("APi not found",error)
+                    } else {
+                        
+                    }
+                })
+        }
+    }
+
+    function showHideInputsInformationCard(activated) {
+        const cardHolderName = document.getElementById('cardHolderName');
+        const cardExpiration = document.getElementById('cardExpiration');
+        const cardCVV = document.getElementById('cardCVV');
+
+        if (activated) {
+            cardHolderName.removeAttribute("disabled")
+            cardExpiration.removeAttribute("disabled")
+            cardCVV.removeAttribute("disabled")
+        } else {
+            cardHolderName.setAttribute("disabled", "")
+            cardExpiration.setAttribute("disabled", "")
+            cardCVV.setAttribute("disabled", "")
+        }
+
+    }
+
+
+    async function changeNumberCard(event) {
+        const cardNumber = event.target.value;
+
+        const cardNumberNoSpaces = cardNumber.replace(/\s+/g, '');
+
+        // Valor formatado para campo de cartão
+        const value = cardNumber.replace(/\D/g, '');
+        const formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        event.target.value = formattedValue
+
+        const selectElement = document.getElementById('cardInstallments');
+
+        if (cardNumberNoSpaces.length < 6) {
+            selectElement.innerHTML = `<option value="">Pague em até ${installmentsValue}x</option>`
+            selectElement.setAttribute("disabled", "disabled");
+            hideMessage()
+            showHideInputsInformationCard(false)
+            executedForSix = false;
+        } else if (cardNumberNoSpaces.length === 6) {
+
+            if (!executedForSix) {
+                let firstSixDigits = cardNumberNoSpaces.substring(0, 6);
+
+                const dataInstallments = {
+                    id_course: data.id_course,
+                    credit_card_bin: firstSixDigits
+                }
+
+                data.credit_card_bin = firstSixDigits
+
+                await axios.post(`${urlApi}/get-installments`, dataInstallments)
+                    .then(installments => {
+                        if (installments.data) {
+                            if (installments.data.error_messages) {
+                                if (installments.data.error_messages[0].error === "credit_card_bin_data_not_found") {
+                                    showMessage("Por favor, use um cartão de outra bandeira", "")
+                                } else {
+                                    showMessage("Ouve algum erro inesperado", "")
+                                }
+                            } else {
+                                selectElement.innerHTML = ""
+
+                                const cardType = Object.keys(installments.data.payment_methods.credit_card)[0];
+
+                                installments.data.payment_methods.credit_card[cardType].installment_plans.forEach((installment) => {
+                                    const optionText = `${installment.installments}x de ${formatCurrency(installment.installment_value / 100)} = ${formatCurrency(installment.amount.value / 100)}`;
+                                    const optionElement = document.createElement('option');
+                                    optionElement.value = installment.installments
+                                    optionElement.textContent = optionText;
+                                    selectElement.appendChild(optionElement);
+                                })
+                                showHideInputsInformationCard(true)
+                                selectElement.removeAttribute("disabled")
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        showMessage("Ouve algum erro inesperado", "")
+                        console.log(error)
+                    })
+                executedForSix = true;
+            }
+        }
+    }
+
+    //5240 0829 7562 2454
+
+    // Negado 5530 0626 4066 3264
+
+    // 5363 8790 0785 3788
+
+    function openModalConclusionPayment(data) {
+        const formPayment = document.getElementById("form-payment")
+        const boxConclusion = document.getElementById("conclusion-payment")
+
+        const paymentDetailsConclusion = document.getElementById("payment-details-conclusion")
+        const pixDetailsPayment = document.getElementById("pix-details-payment")
+
+
+        const boxStatusIcon = document.getElementById("box-status-icons")
+        const textStatus = document.getElementById("text-status")
+        const valuePurchase = document.getElementById("value-purchase")
+        const installmentsBrand = document.getElementById("installments-brand")
+        const textStatusSecond = document.getElementById("text-status-second")
+        const codeTransaction = document.getElementById("code-transaction")
+
+        const nameCourseDescription = document.getElementById("name-course-description")
+        const quantiCourse = document.getElementById("quanti-course")
+        const valueUnit = document.getElementById("value-unit")
+        const valueTotal = document.getElementById("value-total")
+        const nameCustomer = document.getElementById("name-customer")
+        const phoneCustomer = document.getElementById("phone-customer")
+        const emailCustomer = document.getElementById("email-customer")
+
+        if (data.charges) {
+            if (data.charges[0].status === "PAID") {
+
+                formPayment.style.display = "none"
+                boxConclusion.style.display = "flex"
+
+                boxStatusIcon.innerHTML = "<i class='fa-solid fa-check fa-2xl'></i>"
+                boxStatusIcon.classList.add("box-success-paid")
+
+                textStatus.innerText = "Seu pagamento foi aprovado"
+
+                valuePurchase.innerText = `${formatCurrency(data.charges[0].amount.value / 100)}`
+
+                installmentsBrand.innerText = `${data.charges[0].payment_method.installments} parcela(s) - ${data.charges[0].payment_method.card.brand}`
+
+                textStatusSecond.innerText = "Aprovado"
+
+                codeTransaction.innerText = data.id
+
+
+                nameCourseDescription.innerText = data.items[0].name
+                quantiCourse.innerText = `${data.items[0].quantity} UN.`
+                valueUnit.innerText = formatCurrency(data.items[0].unit_amount / 100)
+
+                valueTotal.innerText = formatCurrency(data.charges[0].amount.value / 100)
+
+                nameCustomer.innerText = data.customer.name
+                phoneCustomer.innerText = data.customer.phones[0].number
+                emailCustomer.innerText = data.customer.email
+
+                fbq('track', 'Purchase', {
+                    content_name: data.items[0].name,
+                    content_ids: [data.id],
+                    content_type: 'curso',
+                    value: data.items[0].unit_amount / 100,
+                    currency: 'BRL'
+                });
+            } else if (data.charges[0].status === "DECLINED") {
+                showMessage("Cartão negado", "")
+            }
+        }
+
+        if (data.qr_codes) {
+            formPayment.style.display = "none"
+            boxConclusion.style.display = "flex"
+
+            paymentDetailsConclusion.style.display = "none"
+            pixDetailsPayment.style.display = "flex"
+
+            const imageQrCodePix = document.getElementById("image-qr-code-pix")
+            const codePix = document.getElementById("code-pix")
+            const dataCreateAt = document.getElementById("data-created-at")
+
+            imageQrCodePix.setAttribute("src", data.qr_codes[0].links[0].href)
+
+            codePix.innerText = data.qr_codes[0].text
+
+
+            const date = new Date(data.created_at);
+
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            const formattedDate = `${day}/${month}/${year}`;
+            const formattedTime = `${hours}:${minutes}`;
+
+            dataCreateAt.innerText = `${formattedDate} às ${formattedTime}`
+
+            nameCourseDescription.innerText = data.items[0].name
+            quantiCourse.innerText = data.items[0].quantity
+            valueUnit.innerText = formatCurrency(data.items[0].unit_amount / 100)
+
+            valueTotal.innerText = formatCurrency(data.items[0].unit_amount / 100)
+
+            nameCustomer.innerText = data.customer.name
+            phoneCustomer.innerText = data.customer.phones[0].number
+            emailCustomer.innerText = data.customer.email
+
+            getTransactionPix(data.id)
+        }
+
+
+    }
+
+
+    const getTransactionPix = async (orderCode) => {
+        setTimeout(async () => {
+            axios.post(`${urlApi}/get-transaction-orders-status/${orderCode}`)
+                .then(responseOrders => {
+                    if (responseOrders.data.charges) {
+                        if (responseOrders.data.charges[0].status === "AUTHORIZED" || responseOrders.data.charges[0].status === "PAID") {
+                            const paymentDetailsConclusion = document.getElementById("payment-details-conclusion")
+                            const pixDetailsPayment = document.getElementById("pix-details-payment")
+
+                            pixDetailsPayment.style.display = "none"
+                            paymentDetailsConclusion.style.display = "flex"
+
+
+                            const boxStatusIcon = document.getElementById("box-status-icons")
+                            const textStatus = document.getElementById("text-status")
+                            const valuePurchase = document.getElementById("value-purchase")
+                            const installmentsBrand = document.getElementById("installments-brand")
+                            const textStatusSecond = document.getElementById("text-status-second")
+                            const codeTransaction = document.getElementById("code-transaction")
+
+
+                            boxStatusIcon.innerHTML = "<i class='fa-solid fa-check fa-2xl'></i>"
+                            boxStatusIcon.classList.add("box-success-paid")
+
+                            textStatus.innerText = "Seu pagamento foi aprovado"
+
+                            valuePurchase.innerText = `${formatCurrency(responseOrders.data.charges[0].amount.value / 100)}`
+
+                            installmentsBrand.innerText = `Pix - Débito Online`
+
+                            textStatusSecond.innerText = "Aprovado"
+
+                            codeTransaction.innerText = responseOrders.data.id
+
+                            console.log("Pagamento aceito!")
+                        }
+                    } else {
+                        getTransactionPix(orderCode)
+                        console.log("Pagamento não efetuado ainda!")
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao verificar pedido!")
+                })
+        }, 60000)
+    }
+
+    const processPayment = async (cardEncrypted) => {
+        const customerName = document.getElementById('customerName').value;
+        const customerEmail = document.getElementById('customerEmail').value;
+        const customerCPF = document.getElementById('customerCPF').value;
+        const customerPhone = document.getElementById('customerPhone').value;
+        const customerDDI = document.getElementById('customerDDI').value;
+        const cleanedPhone = customerPhone.replace(/\D/g, '');
+
+        const cardInstallments = document.getElementById('cardInstallments').value;
+
+        let customerCPFClean = customerCPF.replace(/\D/g, '');
+
+        data.customerNameData = customerName,
+            data.customerEmailData = customerEmail,
+            data.customerCpfData = customerCPFClean,
+            data.customerPhoneData = cleanedPhone,
+            data.customerDDIData = customerDDI,
+            data.cardEncrypted = cardEncrypted,
+            data.cardInstallmentsData = Number(cardInstallments)
+
+        axios.post(`${urlApi}/create-order`, data)
+            .then(response => {
+                if (response.data) {
+                    openModalConclusionPayment(response.data)
+                    openCloseModalLoading(false, "")
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao criar o pedido:', error.response ? error.response.data : error.message);
+                showMessage("Algum erro inesperado!", "")
+                openCloseModalLoading(false, "")
+            })
+    }
+
+    const processPaymentPix = async () => {
+        const customerName = document.getElementById('customerName').value;
+        const customerEmail = document.getElementById('customerEmail').value;
+        const customerCPF = document.getElementById('customerCPF').value;
+        const customerDDI = document.getElementById('customerDDI').value;
+        const customerPhone = document.getElementById('customerPhone').value;
+        const cleanedPhone = customerPhone.replace(/\D/g, '');
+
+        if (!validarCPF(customerCPF)) {
+            showMessage("Cpf inválido!", "Informe um cpf válido.")
+        } else {
+            let customerCPFClean = customerCPF.replace(/\D/g, '');
+
+            if(!customerName || !customerEmail || !customerPhone) {
+                showMessage("Preencha todos os campos!", "Preencha os dados corretamente.")
+            } else {
+                data.customerNameData = customerName,
+                    data.customerEmailData = customerEmail,
+                    data.customerCpfData = customerCPFClean,
+                    data.customerPhoneData = cleanedPhone
+                    data.customerDDIData = customerDDI,
+    
+                openCloseModalLoading(true, "Gerando um código de pagamento")
+    
+                axios.post(`${urlApi}/create-order-pix`, data)
+                    .then(response => {
+                        if (response.data) {
+                            openModalConclusionPayment(response.data)
+                            openCloseModalLoading(false, "")
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao criar o pedido:', error.response ? error.response.data : error.message);
+                        showMessage("Algum erro inesperado!", "")
+                        openCloseModalLoading(false, "")
+                    })
+            }
+        }
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(response => console.log(response))
+    } else {
+        console.error("Geolocation is not supported by this browser.");
+    }
+
+    async function encryptCard() {
+        const cardHolderName = document.getElementById('cardHolderName').value;
+        const cardNumber = document.getElementById('cardNumber').value;
+        const cardNumberNoSpaces = cardNumber.replace(/\s+/g, '');
+
+        const cardExpiration = document.getElementById('cardExpiration').value;
+        const [cardExpirationMonth, cardExpirationYear] = cardExpiration.split('/');
+        const cardCVV = document.getElementById('cardCVV').value;
+
+        const customerName = document.getElementById('customerName').value;
+        const customerEmail = document.getElementById('customerEmail').value;
+        const customerCPF = document.getElementById('customerCPF').value;
+        const customerPhone = document.getElementById('customerPhone').value;
+        const cardInstallments = document.getElementById('cardInstallments').value;
+
+        //5240 0829 7562 2454
+        if (!cardInstallments || !cardHolderName || !cardNumber || cardNumberNoSpaces.length < 13 || !cardExpirationMonth || !cardExpirationYear || !cardCVV || !customerName || !customerEmail || !customerCPF || !customerPhone || !validarCPF(customerCPF)) {
+            showMessage("Preencha todos os campos!", "Preencha os dados corretamente.")
+        } else {
+            openCloseModalLoading(true, "Processando pagamento")
+            const publicKey = await getPublicKey()
+
+            if (publicKey) {
+                const card = PagSeguro.encryptCard({
+                    publicKey: publicKey,
+                    holder: cardHolderName,
+                    number: cardNumberNoSpaces,
+                    expMonth: cardExpirationMonth,
+                    expYear: `20${cardExpirationYear}`,
+                    securityCode: cardCVV
+                });
+
+                const encrypted = card.encryptedCard;
+                const hasErrors = card.hasErrors;
+                const errors = card.errors;
+
+                if (encrypted && !hasErrors) {
+                    processPayment(encrypted)
+                } else {
+                    if(errors[0].code === "INVALID_NUMBER") {
+                        showMessage("Número de cartão inválido", "Preencha os dados corretamente.")
+                    } else {
+                        showMessage("Algum erro inesperado!", "")
+                    }
+                    openCloseModalLoading(false, "")
+                }
+            }
+        }
+    }
+
+    (() => {
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+
+        if (params.size > 0) {
+            const curso = params.get('course');
+            if (curso) {
+                getCourse(curso)
+            } else {
+                return null
+            }
+        } else {
+            return null
+        }
+    })()
+
+    function formatInputNumber(event) {
+        const input = event.target;
+        let value = input.value.replace(/\D/g, '');
+        input.value = value;
+    }
+
+    function formatExpiryDate(event) {
+        const input = event.target;
+        let value = input.value.replace(/\D/g, '');
+
+        if (value.length > 4) {
+            value = value.slice(0, 4);
+        }
+
+        if (value.length > 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+
+        input.value = value;
+    }
+
+    function formatPhone(input) {
+        let phone = input.value.replace(/\D/g, '');
+
+        if (phone.length <= 10) {
+            phone = phone.replace(/(\d{2})(\d)/, '($1) $2');
+            phone = phone.replace(/(\d{4})(\d)/, '$1-$2');
+        } else {
+            phone = phone.replace(/(\d{2})(\d)/, '($1) $2');
+            phone = phone.replace(/(\d{5})(\d)/, '$1-$2');
+        }
+        input.value = phone;
+    }
+
+    function showMessage(errorMsg, infoMsg) {
+        const declinedCardBox = document.getElementById("box-error-credit-card")
+        const error = document.querySelector("#box-error-credit-card #error")
+        const infoError = document.querySelector("#box-error-credit-card #info-error")
+
+        error.innerText = errorMsg
+        infoError.innerText = infoMsg
+
+        declinedCardBox.style.display = "flex"
+    }
+
+    function hideMessage() {
+        const declinedCardBox = document.getElementById("box-error-credit-card")
+        const error = document.querySelector("#box-error-credit-card #error")
+        const infoError = document.querySelector("#box-error-credit-card #info-error")
+
+        declinedCardBox.style.display = "none"
+        error.innerText = ""
+        infoError.innerText = ""
+    }
+
+    const formatCurrency = (amount) => {
+        return amount.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+    };
+
+    const getPublicKey = () => {
+        return axios.post(`${urlApi}/get-public-key`)
+            .then(response => {
+                return response.data.public_key
+            })
+            .catch(error => {
+                console.error(error)
+                return false
+            })
+    }
+
+    window.addEventListener('beforeunload', async function(e) {
+
+        e.preventDefault();
+        e.returnValue = '';
+        fbq('trackCustom', 'AbandonedCart');
+
+        return 'Tem certeza que deseja sair da página?';
+    });
+
+    function onInputCpf(event) {
+        let value = event.value.replace(/\D/g, '');
+        const inputCpf = document.getElementById("customerCPF")
+
+        if (value.length === 11) {
+            if (!validarCPF(event.value)) {
+                inputCpf.style.borderColor = "red"
+            }
+
+        } else if (value.length < 11) {
+            inputCpf.style.borderColor = "#CCCCCC"
+        }
+
+        if (value.length > 3 && value.length <= 6) {
+            value = value.replace(/(\d{3})(\d+)/, '$1.$2');
+        } else if (value.length > 6 && value.length <= 9) {
+            value = value.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+        } else if (value.length > 9) {
+            value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+        }
+
+        event.value = value
+    }
+
+
+    function validarCPF(cpf) {
+        cpf = cpf.replace(/[^\d]+/g, '');
+
+        if (cpf.length !== 11 ||
+            /^(\d)\1+$/.test(cpf)) {
+            return false;
+        }
+
+        let soma = 0;
+        let resto;
+
+        for (let i = 1; i <= 9; i++) {
+            soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+        }
+
+        resto = (soma * 10) % 11;
+        if ((resto === 10) || (resto === 11)) resto = 0;
+        if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+        soma = 0;
+        for (let i = 1; i <= 10; i++) {
+            soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+        }
+
+        resto = (soma * 10) % 11;
+        if ((resto === 10) || (resto === 11)) resto = 0;
+        if (resto !== parseInt(cpf.substring(10, 11))) return false;
+
+        return true;
+    }
+
+    document.querySelectorAll("#box-types-payments > a").forEach((button) => {
+        button.addEventListener("click", (event) => {
+            const boxContainers = document.querySelectorAll("#box-types-containers > div")
+            boxContainers.forEach((box) => {
+                if (event.target.id == box.id) {
+                    if (!box.classList.contains("box-activate")) {
+                        box.classList.add("box-activate")
+                        if (box.id == "pix") {
+                            document.getElementById("purchase").style.display = "none"
+                        } else {
+                            document.getElementById("purchase").style.display = "flex"
+                        }
+                    }
+                } else {
+                    box.classList.remove("box-activate")
+                }
+            })
+            document.querySelectorAll("#box-types-payments > a").forEach((button) => {
+                button.classList.remove("active-button-payments")
+            })
+            event.target.classList.add("active-button-payments")
+        })
+    })
+
+    document.getElementById('cardNumber').addEventListener("paste", (event) => {
+        event.preventDefault()
+    })
+
+    document.getElementById('copy-code-pix').addEventListener('click', function() {
+        const textToCopy = document.getElementById('code-pix').innerText;
+
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+
+        try {
+            document.execCommand('copy');
+            alert('Texto copiado com sucesso!');
+        } catch (err) {
+            alert('Falha ao copiar o texto.');
+        }
+
+        document.body.removeChild(textarea);
+    });
+
+    document.getElementById("link-voucher").addEventListener("click", (event) => {
+        document.getElementById("container-form-elementor").style.width = "100%"
+        window.print();
+        document.getElementById("container-form-elementor").style.width = "60%"
+    })
+
+    function openCloseModalLoading(loading, msg) {
+        document.getElementById("message-loading").innerText = msg
+        const buttonPurchase = document.getElementById("purchase")
+        const buttonPix = document.getElementById("button-pix")
+        const boxLoading = document.getElementById("loading-payment")
+        if (loading) {
+            buttonPurchase.setAttribute("disabled", "")
+            buttonPix.setAttribute("disabled", "")
+            boxLoading.style.display = "flex"
+        } else {
+            buttonPurchase.removeAttribute("disabled")
+            buttonPix.removeAttribute("disabled")
+            boxLoading.style.display = "none"
+        }
+    }
+</script>
+
+<style>
+    @font-face {
+    font-family: 'MADE REGULAR';
+    src: url('./assets/fonts/woff2/MADEOuterSansRegular.woff2') format('woff2'),
+        url('./assets/fonts/eot/MADEOuterSansRegular.eot') format('eot'),
+        url('./assets/fonts/ttf/MADEOuterSansRegular.ttf') format('truetype');
+    font-display: swap;
+}
+
+body {
+    font-family: "MADE REGULAR";
+    display: flex;
+    flex-direction: column;
+    padding: 0px;
+    margin: 0px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+#form-payment {
+    display: flex;
+}
+
+#conclusion-payment {
+    display: none;
+}
+
+#payment-details-conclusion {
+    display: flex;
+}
+
+#pix-details-payment {
+    display: none;
+}
+
+.box-form-payment {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.box-information-purchase {
+    display: flex;
+    justify-content: center;
+    border-bottom: solid 1px #000000;
+}
+
+.box-information-purchase .box-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.box-information-purchase .box-image img {
+    width: 100%;
+}
+
+.box-customer-inputs {
+    padding: 10px 0px;
+}
+
+.box-customer-inputs .box-inputs {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0px;
+}
+
+.box-type-payments {
+    display: flex;
+    gap: 10px;
+}
+
+.container-option-payment>div {
+    display: none;
+}
+
+.active-button-payments {
+    border: solid 2px #034080 !important;
+    color: #034080;
+}
+
+.box-type-payments a {
+    border: solid 1px #000000;
+    border-radius: 5px;
+    padding: 20px;
+    cursor: pointer;
+}
+
+.container-option-payment {
+    padding: 20px 0px;
+}
+
+.container-card-credit {
+    border: solid 1px #000000;
+    border-radius: 5px;
+    padding: 20px;
+    display: flex;
+}
+
+.box-dados-expirate {
+    display: flex;
+    align-items: end;
+    gap: 20px;
+}
+
+.box-inputs-credit>.box-input {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0px;
+}
+
+.box-dados-expirate>.box-input {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0px;
+}
+
+.box-image-credit {
+    padding: 30px;
+}
+
+.box-image-credit > img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+input,
+select {
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: "MADE REGULAR";
+    width: 100%;
+}
+
+.box-row-inputs {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.box-input-ddi {
+    width: 10%;
+}
+
+.box-input-phone {
+    width: 90%;
+}
+
+input:focus {
+    outline: none;
+}
+
+.box-installments-input {
+    display: flex;
+    flex-direction: column;
+}
+
+.box-details-payments .box-title-details {
+    border-bottom: solid 1px #000000;
+}
+
+.box-details-payments .box-details-payment {
+    display: flex;
+    justify-content: space-between;
+}
+
+.box-button-pix button {
+    margin-top: 20px;
+    padding: 10px;
+    width: 30%;
+    background-color: #1BB99A;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.box-button-purchase button {
+    margin-top: 20px;
+    padding: 10px;
+    width: 100%;
+    background-color: #28a745;
+    color: white;
+    font-size: 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.box-button-purchase button:hover {
+    background-color: #218838;
+}
+
+.box-activate {
+    display: flex !important;
+}
+
+.container-card-pix {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.box-conclusion-payment {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.payment-details-conclusion,
+.details-purchase-conclusion,
+.identification-purchase-conclusion,
+.pix-details-payment {
+    padding: 50px;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.box-icon-conclusion {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.box-icon-status {
+    border-radius: 50%;
+    height: 80px;
+    width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Retornos de pagamentos */
+
+.box-success-paid {
+    background-color: #28a745;
+}
+
+.box-reprove-paid {
+    background-color: #a72828;
+}
+
+.box-icon-status i {
+    color: #f8f8f8;
+}
+
+.box-value-payment {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.box-forma-payment {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: solid 1px #000000;
+}
+
+.box-forma-payment-cod {
+    display: flex;
+    justify-content: space-between;
+}
+
+.box-buttons-download {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.box-buttons-download a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    margin-top: 20px;
+    padding: 10px;
+    width: 100%;
+    font-size: 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.box-buttons-download a.button-download-comprov {
+    background-color: #007BFF;
+    color: white;
+}
+
+.box-buttons-download a.button-back-to-store {
+    color: #007BFF;
+    border: solid 1px #007BFF;
+}
+
+.box-description-course {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: solid 1px #000000;
+}
+
+.box-total-purchase {
+    display: flex;
+    justify-content: space-between;
+}
+
+.box-identification-title {
+    border-bottom: solid 1px #000000;
+}
+
+.box-imagem-pix-payments {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.box-qrcode-scan {
+    display: flex;
+    flex-direction: column;
+}
+
+.box-row-qrcode-image {
+    display: flex;
+}
+
+.box-qrcode-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    width: 30%;
+}
+
+.box-qrcode-image img {
+    width: 100%;
+    height: 100%;
+}
+
+.box-informations-pix {
+    display: flex;
+    flex-direction: column;
+}
+
+.box-informations-pix>div {
+    display: flex;
+    gap: 20px;
+}
+
+.box-code-pix {
+    border: solid 1px #000000;
+    padding: 10px;
+}
+
+.box-button-copy-pix {
+    display: flex;
+    justify-content: center;
+}
+
+.box-button-copy-pix a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: white;
+}
+
+.box-informations-time-payment {
+    border-top: solid 1px #000000;
+    margin: 20px 0px;
+}
+
+.box-error-credit-card {
+    align-items: center;
+    gap: 20px;
+}
+
+.box-error-credit-card .box-ball-declined {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    background-color: #CB2A2A;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.box-error-credit-card .box-ball-declined i {
+    color: #FFFFFF;
+}
+
+.box-loading-payment {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: #c3c3c388;
+}
+
+.box-loading {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff71;
+    border-radius: 20px;
+    padding: 0px 10px;
+}
+
+.box-gif {
+    padding: 10px;
+}
+
+.box-gif>img {
+    width: 50px;
+    height: 50px;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(360deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+.rotate {
+    animation: rotate 1s linear infinite;
+}
+
+@media (max-width: 1560px) {
+    
+}
+
+@media (max-width: 1501px) {
+
+}
+
+@media (max-width: 1370px) {
+
+}
+
+@media (max-width: 1025px) {
+    .container-card-credit {
+        flex-direction: column-reverse;
+    }
+
+    #container-form-elementor {
+        width: 80% !important;
+    }
+
+    .box-image-credit {
+        display: flex;
+        justify-content: center;
+    }
+
+    .box-image-credit > img {
+        width: 50%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+
+@media (max-width: 890px) {
+
+}
+
+@media (max-width: 551px) {
+    .box-image-credit > img {
+        width: 100%;
+    }
+
+    .box-input-ddi {
+        width: 20%;
+    }
+
+    #container-form-elementor {
+        width: 90% !important;
+    }
+
+    .payment-details-conclusion, .details-purchase-conclusion, .identification-purchase-conclusion, .pix-details-payment {
+        padding: 25px;
+    }
+
+    .box-buttons-download a {
+        font-size: 16px;
+    }
+}
+</style>

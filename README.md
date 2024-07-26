@@ -1,53 +1,73 @@
-![PayPal Developer Cover](https://github.com/paypaldev/.github/blob/main/pp-cover.png)
+# <img src="/Icon/pagbank.png" height="50" width="50"> pagbank
 
-<div align="center">
-  <a href="https://twitter.com/paypaldev" target="_blank">
-    <img alt="Twitter: PayPal Developer" src="https://img.shields.io/twitter/follow/paypaldev?style=social" />
-  </a>
-  <br />
-  <a href="https://twitter.com/paypaldev" target="_blank">Twitter</a>
-    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-  <a href="https://www.paypal.com/us/home" target="_blank">PayPal</a>
-    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-  <a href="https://developer.paypal.com/home" target="_blank">Docs</a>
-    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-  <a href="https://github.com/paypaldev" target="_blank">Code Samples</a>
-    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-  <a href="https://dev.to/paypaldeveloper" target="_blank">Blog</a>
-  <br />
-  <hr />
-</div>
+[![license](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[! status]()]()
+[![nuget downloads](https://img.shields.io/nuget/dt/pagbank?cacheSeconds=300)](https://www.nuget.org/packages/pagbank)
+[![nuget version](https://img.shields.io/nuget/v/pagbank?cacheSeconds=300)](https://www.nuget.org/packages/pagbank)
+[![coverage status]()]()
 
-# PayPal JavasScript (NodeJS) FullStack Standard Checkout
+Bem-vindo ao repositório da _**pagbank**_! 
 
-This sample app shows you how to integrate PayPal into your JavasScript app for the [standard checkout](https://developer.paypal.com/docs/checkout/standard/integrate/) workflow.
+Esta biblioteca é uma solução poderosa para facilitar a integração de serviços RESTful em seus aplicativos.
 
-## Run this project
+## Visão Geral
 
-### PayPal Codespaces
-[![Open Code In GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/paypaldev/PayPal-JavaScript-FullStack-Standard-Checkout-Sample?devcontainer_path=.devcontainer%2Fdevcontainer.json)
+A _**pagbank**_ foi desenvolvida para simplificar e agilizar a comunicação com APIs RESTful. Ela oferece recursos avançados e uma integração perfeita para realizar operações assíncronas, processar dados, autenticar solicitações e muito mais.
 
-### Locally
+## Principais Recursos
 
-In your terminal run:
+- Integração perfeita com o RestSharp para chamadas RESTful
+- Suporte a autenticação segura e gerenciamento de tokens
+- Operações assíncronas eficientes para não bloquear a thread principal
+- Abstração de dados para simplificar o processamento de respostas
+- Extensa documentação e exemplos práticos
 
-`npm start` and navigate to [http://localhost:8888/](http://localhost:8888/).
+## Instalação
 
-### Frontend
+Para começar a usar a biblioteca _**pagbank**_, siga estas etapas simples:
 
-- Open the `checkout.html` and resplace the `test` string in the script tag with your PayPal Client ID.
+1. Abra seu projeto no Visual Studio ou em sua IDE preferida.
 
-### Backend
+   ```bash
+   Install-Package pagbank
+   ```
+## Documentação Oficial do PagBank
 
-- Rename the `.env.example` file to `.env`.
-- Inside of the `.env` file, enter your PayPal _client ID_ for the `PAYPAL_CLIENT_ID` and your PayPal _app secret_ for the `PAYPAL_CLIENT_SECRET` enviroment variables.
-- Run `npm install` in your terminal
-- Run `npm start` in your terminal
+Para informações detalhadas sobre como usar a biblioteca _**pagbank**_ em conjunto com as APIs do PagBank, consulte a nossa [Documentação Oficial](https://dev.pagbank.uol.com.br/reference/introducao).
 
-## PayPal Developer Community
+## Ambiente disponíveis
 
-The PayPal Developer community helps you build your career while improving your products and the developer experience. You’ll be able to contribute code and documentation, meet new people and learn from the open-source community.
+Você pode interagir com as APIs do PagBank por meio de dois ambientes: Sandbox e Produção, veja exemplo da tabela abaixo:
 
-- Website: [developer.paypal.com](https://developer.paypal.com)
-- Twitter: [@paypaldev](https://twitter.com/paypaldev)
-- GitHub: [@paypal](https://github.com/paypal)
+| Ambiente              | Url                                           |
+| :---                  | :---                                          |
+| Sandbox               | https://sandbox.api.pagseguro.com             |
+| SandboxSecure         | https://secure.sandbox.api.pagseguro.com      |
+| SandboxSignature      | https://sandbox.api.assinaturas.pagseguro.com |
+| Production            | https://api.pagseguro.com                     |
+| ProductionSecure      | https://secure.api.pagseguro.com              |
+| ProductionSignature   | https://api.assinaturas.pagseguro.com         |
+
+
+## Exemplo de uso
+
+```
+```
+
+#### Exemplo de criar o pedido
+
+```
+```
+
+#### Exemplo de consultar pedidos
+
+```
+```
+
+## Testes Unitários Compatíveis
+
+A biblioteca _**pagbank**_ é compatível e funcional com testes unitários usando a biblioteca de mocking Moq. Isso permite que você crie testes robustos para garantir a qualidade e a estabilidade da sua aplicação. 
+
+## Saiba mais
+
+Para mais detalhes e exemplos detalhados, consulte nossa [Wiki]().
