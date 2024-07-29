@@ -33,84 +33,90 @@ module.exports = app => {
 		const courses = app.utils.utils.getCoursesInJson();
 
 		const course = courses.find(p => p.reference_id === id_course);
+		
+		if(course) {
+			const firstTwoDigits = customerPhoneData.substring(0, 2);
+			const remainingDigits = customerPhoneData.substring(2);
+	
+			const creditInstallmentsValue = {
+				unit_amount: course.unit_amount,
+				installments: course.installments,
+				credit_card_bin: credit_card_bin
+			}
+	
+			const installments = await app.utils.utils.getInstallmentsFunction(creditInstallmentsValue)
 
-		if (!course) return res.status(400).send('Curso não encontrado!');
-
-		const firstTwoDigits = customerPhoneData.substring(0, 2);
-		const remainingDigits = customerPhoneData.substring(2);
-
-		const creditInstallmentsValue = {
-			unit_amount: course.unit_amount,
-			installments: course.installments,
-			credit_card_bin: credit_card_bin
-		}
-
-
-		const installments = await app.utils.utils.getInstallmentsFunction(creditInstallmentsValue)
-
-		if (!installments) res.status(400).send("Algum erro inesperado")
-
-		const cardType = Object.keys(installments.payment_methods.credit_card)[0];
-
-		const installmentPlans = installments.payment_methods.credit_card[cardType].installment_plans
-
-		const selectedPlan = installmentPlans.find(plan => plan.installments === cardInstallmentsData);
-
-		const orderDetails = {
-			customer: {
-				name: customerNameData,
-				email: customerEmailData,
-				tax_id: customerCpfData,
-				phones: [{
-					country: customerDDIData,
-					area: firstTwoDigits,
-					number: remainingDigits,
-					type: 'MOBILE'
-				}]
-			},
-			items: [{
-				reference_id: course.reference_id,
-				name: course.name,
-				quantity: 1,
-				unit_amount: course.unit_amount
-			}],
-			notification_urls: [
-				"https://meusite.com/notificacoes"
-			],
-			charges: [{
-				description: 'Cobrança de Teste',
-				amount: selectedPlan.amount,
-				payment_method: {
-					type: 'CREDIT_CARD',
-					installments: cardInstallmentsData,
-					capture: true,
-					card: {
-						encrypted: cardEncrypted,
-						store: false,
-					},
-					holder: {
+			if(installments) {
+				const cardType = Object.keys(installments.payment_methods.credit_card)[0];
+		
+				const installmentPlans = installments.payment_methods.credit_card[cardType].installment_plans
+		
+				const selectedPlan = installmentPlans.find(plan => plan.installments === cardInstallmentsData);
+		
+				const orderDetails = {
+					customer: {
 						name: customerNameData,
-						tax_id: customerCpfData
-					}
-				},
-			}],
-		};
-
-		try {
-			const response = await axios.post(`${process.env.BASE_URL}/orders`, JSON.stringify(orderDetails), {
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${process.env.TOKEN}`,
-					'accept': '*/*',
+						email: customerEmailData,
+						tax_id: customerCpfData,
+						phones: [{
+							country: customerDDIData,
+							area: firstTwoDigits,
+							number: remainingDigits,
+							type: 'MOBILE'
+						}]
+					},
+					items: [{
+						reference_id: course.reference_id,
+						name: course.name,
+						quantity: 1,
+						unit_amount: course.unit_amount
+					}],
+					notification_urls: [
+						"https://meusite.com/notificacoes"
+					],
+					charges: [{
+						description: 'Cobrança de Teste',
+						amount: selectedPlan.amount,
+						payment_method: {
+							type: 'CREDIT_CARD',
+							installments: cardInstallmentsData,
+							capture: true,
+							card: {
+								encrypted: cardEncrypted,
+								store: false,
+							},
+							holder: {
+								name: customerNameData,
+								tax_id: customerCpfData
+							}
+						},
+					}],
+				};
+		
+				try {
+					const response = await axios.post(`${process.env.BASE_URL}/orders`, JSON.stringify(orderDetails), {
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${process.env.TOKEN}`,
+							'accept': '*/*',
+						}
+					});
+		
+					res.status(200).json(response.data);
+				} catch (error) {
+					app.config.logger.logger.error('Error transaction credit card: %O', error.response ? error.response.data : error.message);
+					res.status(500).json(error.response ? error.response.data : error.message);
 				}
-			});
-
-			// console.log(response.data);
-			res.status(200).json(response.data);
-		} catch (error) {
-			console.error(error.response ? error.response.data : error.message);
-			res.status(500).json(error.response ? error.response.data : error.message);
+			} else {
+				app.config.logger.logger.error("Código do cartão com erro!")
+				return res.status(400).send("Algum erro inesperado")
+			}
+	
+		} else {
+			app.config.logger.logger.error("ID do curso não encontrado: %O", id_course)
+			return res.status(400).send('Curso não encontrado!');
 		}
+		
 	};
 
 	const createOrderPix = async (req, res) => {
@@ -138,56 +144,60 @@ module.exports = app => {
 
 		const course = courses.find(p => p.reference_id === id_course);
 
-		if (!course) return res.status(400).send('Curso não encontrado!');
-
-		const firstTwoDigits = customerPhoneData.substring(0, 2);
-		const remainingDigits = customerPhoneData.substring(2);
-
-		const orderDetails = {
-			customer: {
-				name: customerNameData,
-				email: customerEmailData,
-				tax_id: customerCpfData,
-				phones: [{
-					country: customerDDIData,
-					area: firstTwoDigits,
-					number: remainingDigits,
-					type: 'MOBILE'
-				}]
-			},
-			items: [{
-				reference_id: course.reference_id,
-				name: course.name,
-				quantity: 1,
-				unit_amount: course.unit_amount
-			}],
-			notification_urls: [
-				"https://meusite.com/notificacoes"
-			],
-			qr_codes: [
-				{
-					amount: {
-						value: course.unit_amount
-					},
-					expiration_date: app.utils.utils.getExpirationDate(2),
-				}
-			]
-		};
-
-		try {
-			const response = await axios.post(`${process.env.BASE_URL}/orders`, JSON.stringify(orderDetails), {
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${process.env.TOKEN}`,
-					'accept': '*/*',
-				}
-			});
-
-			res.status(200).json(response.data);
-		} catch (error) {
-			console.error(error.response ? error.response.data : error.message);
-			res.status(500).json(error.response ? error.response.data : error.message);
+		if(course) {
+			const firstTwoDigits = customerPhoneData.substring(0, 2);
+			const remainingDigits = customerPhoneData.substring(2);
+	
+			const orderDetails = {
+				customer: {
+					name: customerNameData,
+					email: customerEmailData,
+					tax_id: customerCpfData,
+					phones: [{
+						country: customerDDIData,
+						area: firstTwoDigits,
+						number: remainingDigits,
+						type: 'MOBILE'
+					}]
+				},
+				items: [{
+					reference_id: course.reference_id,
+					name: course.name,
+					quantity: 1,
+					unit_amount: course.unit_amount
+				}],
+				notification_urls: [
+					"https://meusite.com/notificacoes"
+				],
+				qr_codes: [
+					{
+						amount: {
+							value: course.unit_amount
+						},
+						expiration_date: app.utils.utils.getExpirationDate(2),
+					}
+				]
+			};
+	
+			try {
+				const response = await axios.post(`${process.env.BASE_URL}/orders`, JSON.stringify(orderDetails), {
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${process.env.TOKEN}`,
+						'accept': '*/*',
+					}
+				});
+	
+				res.status(200).json(response.data);
+			} catch (error) {
+				app.config.logger.logger.error('Error transaction method pix: %O', error.response ? error.response.data : error.message);
+				res.status(500).json(error.response ? error.response.data : error.message);
+			}
+		} else {
+			app.config.logger.logger.error("ID do curso não encontrado: %O", id_course)
+			return res.status(400).send('Curso não encontrado!');
 		}
+
 	}
 
 	const getCourse = (req, res) => {
@@ -199,10 +209,11 @@ module.exports = app => {
 
 		const course = courses.find(p => p.reference_id === id_course);
 
-		if (!course) return res.status(400).send('Curso não encontrado!');
-
-		if (course) return res.status(200).json(course);
-
+		if (course) {
+			return res.status(200).json(course)
+		} else {
+			return res.status(400).send('Curso não encontrado!')
+		}
 	}
 
 	const getInstallments = async (req, res) => {
@@ -212,77 +223,84 @@ module.exports = app => {
 		const { id_course, credit_card_bin } = req.body;
 
 		const courses = app.utils.utils.getCoursesInJson();
-
 		const course = courses.find(p => p.reference_id === id_course);
 
-		if (!course) return res.status(400).send('Curso não encontrado!');
+		if (course) {
+			try {
+				const response = await axios.get(`${process.env.BASE_URL}/charges/fees/calculate`, {
+					params: {
+						value: Number(course.unit_amount),
+						payment_methods: "CREDIT_CARD",
+						max_installments: Number(course.installments),
+						max_installments_no_interest: 0,
+						credit_card_bin: Number(credit_card_bin),
+					},
+					headers: {
+						'Authorization': `Bearer ${process.env.TOKEN}`,
+						'Content-Type': 'application/json',
+						'accept': '*/*'
+					}
+				});
 
-		try {
-			const response = await axios.get(`${process.env.BASE_URL}/charges/fees/calculate`, {
-				params: {
-					value: Number(course.unit_amount),
-					payment_methods: "CREDIT_CARD",
-					max_installments: Number(course.installments),
-					max_installments_no_interest: 0,
-					credit_card_bin: Number(credit_card_bin),
-				},
-				headers: {
-					'Authorization': `Bearer ${process.env.TOKEN}`,
-					'Content-Type': 'application/json',
-					'accept': '*/*'
-				}
-			});
-
-			return res.status(200).json(response.data);
-		} catch (error) {
-			return res.status(200).send(error.response ? error.response.data : error.message);
+				return res.status(200).json(response.data);
+			} catch (error) {
+				return res.status(200).send(error.response ? error.response.data : error.message);
+			}
+		} else {
+			app.config.logger.logger.error("ID do curso não encontrado: %O", id_course)
+			return res.status(400).send('Cartão não encontrado!')
 		}
-	};
+	}
 
 
 	const getTransactionChargesStatus = async (req, res) => {
 		const chargeId = req.params.chargeId;
-		if (!chargeId) return res.status(400).send('Transaction ID is required.');
 
-		console.log(chargeId)
-
-		try {
-			const response = await axios.get(`${process.env.BASE_URL}/charges/${chargeId}`, {
-				headers: {
-					'Authorization': `Bearer ${process.env.TOKEN}`,
-					'Content-Type': 'application/json',
-					'accept': '*/*'
-				}
-			});
-
-			console.log(response.data)
-
-			res.status(200).json(response.data);
-		} catch (error) {
-			console.error('Error fetching transaction status:', error.response ? error.response.data : error.message);
-			res.status(500).json({ error: 'Error fetching transaction status' });
+		if(chargeId) {
+			try {
+				const response = await axios.get(`${process.env.BASE_URL}/charges/${chargeId}`, {
+					headers: {
+						'Authorization': `Bearer ${process.env.TOKEN}`,
+						'Content-Type': 'application/json',
+						'accept': '*/*'
+					}
+				})
+	
+				res.status(200).json(response.data);
+			} catch (error) {
+				app.config.logger.logger.error('Error fetching transaction status: %O', error.response ? error.response.data : error.message);
+				res.status(500).json({ error: 'Error fetching transaction status' });
+			}
+		} else {
+			app.config.logger.logger.error(`ID requerido!`)
+			return res.status(400).send('Transaction ID is required.');
 		}
+
 	};
 
 	const getTransactionOrdesStatus = async (req, res) => {
 		const orderId = req.params.orderId;
-		if (!orderId) return res.status(400).send('Transaction ID is required.');
 
-		try {
-			const response = await axios.get(`${process.env.BASE_URL}/orders/${orderId}`, {
-				headers: {
-					'Authorization': `Bearer ${process.env.TOKEN}`,
-					'Content-Type': 'application/json',
-					'accept': '*/*'
-				}
-			});
-
-			res.status(200).json(response.data);
-		} catch (error) {
-			console.error('Error fetching transaction status:', error.response ? error.response.data : error.message);
-			res.status(500).json({ error: 'Error fetching transaction status' });
+		if(orderId) {
+			try {
+				const response = await axios.get(`${process.env.BASE_URL}/orders/${orderId}`, {
+					headers: {
+						'Authorization': `Bearer ${process.env.TOKEN}`,
+						'Content-Type': 'application/json',
+						'accept': '*/*'
+					}
+				});
+	
+				res.status(200).json(response.data);
+			} catch (error) {
+				app.config.logger.logger.error('Error fetching transaction status: %O', error.response ? error.response.data : error.message);
+				res.status(500).json({ error: 'Error fetching transaction status' });
+			}
+		} else {
+			app.config.logger.logger.error(`ID requerido!`)
+			return res.status(400).send('Transaction ID is required.');
 		}
-	};
+	}
 
 	return { createOrder, createOrderPix, getCourse, getInstallments, getTransactionChargesStatus, getTransactionOrdesStatus }
 }
