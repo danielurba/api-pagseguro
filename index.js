@@ -7,6 +7,7 @@ const { PORT } = process.env;
 
 consign()
     .then('./config/middlewares.js')
+    .then('./config/logger.js')
     .then('./api')
     .then('./config/routes.js')
     .then('./utils')

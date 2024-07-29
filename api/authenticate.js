@@ -14,6 +14,7 @@ module.exports = app => {
 
             res.status(200).json(response.data);
         } catch (error) {
+            app.config.logger.logger.error("Erro ao pegar public key: %0", error.response ? error.response.data : error.message)
             res.status(500).json(error.response ? error.response.data : error.message);
         }
     }
@@ -29,10 +30,9 @@ module.exports = app => {
                 data: {"type":"card"}
             });
 
-            console.log(response)
-
             res.status(200).json(response.data);
         } catch (error) {
+            app.config.logger.logger.error("Erro ao criar public key: %0", error.response ? error.response.data : error.message)
             res.status(500).json(error.response ? error.response.data : error.message);
         }
     }
