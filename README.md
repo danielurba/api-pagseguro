@@ -1,1 +1,1 @@
-# Api Pagbank
+# Pagseguro Checkout Transparente - API Node - Frontend
